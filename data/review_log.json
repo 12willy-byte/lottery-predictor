@@ -1,0 +1,162 @@
+{
+  "date": "2026-06-19",
+  "type": "baseline",
+  "ssq_latest": "26068",
+  "dlt_latest": "26067",
+  "weights": {
+    "hot": 10,
+    "warm": 10,
+    "cold": 3,
+    "omission": 12,
+    "tail": 12,
+    "prime": 33,
+    "follow": 1,
+    "span": 10,
+    "odd_even": 10,
+    "big_small": 10,
+    "repeat": 8,
+    "consec": 5
+  },
+  "self_eval": {
+    "hot": 0.54,
+    "omission": 0.83,
+    "prime": 1.83,
+    "follow": 0.0,
+    "repeat": 1.08
+  },
+  "ssq_recommendation": [
+    {
+      "reds": [
+        2,
+        5,
+        13,
+        17,
+        19,
+        31
+      ],
+      "blue": 14,
+      "score": 391.8
+    },
+    {
+      "reds": [
+        2,
+        7,
+        13,
+        17,
+        29,
+        31
+      ],
+      "blue": 14,
+      "score": 390.4
+    },
+    {
+      "reds": [
+        2,
+        11,
+        13,
+        17,
+        19,
+        29
+      ],
+      "blue": 14,
+      "score": 388.2
+    },
+    {
+      "reds": [
+        2,
+        11,
+        13,
+        17,
+        23,
+        29
+      ],
+      "blue": 14,
+      "score": 388.2
+    },
+    {
+      "reds": [
+        2,
+        5,
+        13,
+        17,
+        29,
+        31
+      ],
+      "blue": 14,
+      "score": 387.8
+    }
+  ],
+  "dlt_recommendation": [
+    {
+      "fronts": [
+        2,
+        5,
+        7,
+        19,
+        23
+      ],
+      "backs": [
+        6,
+        10
+      ],
+      "score": 344.4
+    },
+    {
+      "fronts": [
+        2,
+        5,
+        17,
+        19,
+        23
+      ],
+      "backs": [
+        6,
+        10
+      ],
+      "score": 344.4
+    },
+    {
+      "fronts": [
+        2,
+        5,
+        7,
+        23,
+        29
+      ],
+      "backs": [
+        6,
+        10
+      ],
+      "score": 343.0
+    },
+    {
+      "fronts": [
+        2,
+        5,
+        7,
+        23,
+        31
+      ],
+      "backs": [
+        6,
+        10
+      ],
+      "score": 343.0
+    },
+    {
+      "fronts": [
+        2,
+        5,
+        17,
+        23,
+        29
+      ],
+      "backs": [
+        6,
+        10
+      ],
+      "score": 343.0
+    }
+  ],
+  "next_review_after": 3
+}

@@ -1,0 +1,22 @@
+{
+  "ssq": {
+    "cold_hot": 25,
+    "omission": 25,
+    "tail": 19,
+    "span": 3,
+    "odd_even": 11,
+    "big_small": 11,
+    "follow": 25,
+    "rna": 25
+  },
+  "dlt": {
+    "cold_hot": 25,
+    "omission": 22,
+    "tail": 20,
+    "span": 3,
+    "odd_even": 12,
+    "big_small": 12,
+    "follow": 24,
+    "rna": 23
+  }
+}

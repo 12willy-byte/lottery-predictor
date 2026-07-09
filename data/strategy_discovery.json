@@ -1,0 +1,200 @@
+{
+  "ssq": {
+    "freq_top": {
+      "tests": 1123,
+      "avg_hits": 1.093,
+      "hit_distribution": {
+        "0": 28.5,
+        "1": 41.8,
+        "2": 22.6,
+        "3": 6.1,
+        "4": 1.0
+      },
+      "hit_rate_1plus": 71.5,
+      "hit_rate_2plus": 29.7
+    },
+    "omission_top": {
+      "tests": 1123,
+      "avg_hits": 1.108,
+      "hit_distribution": {
+        "0": 25.8,
+        "1": 43.5,
+        "2": 25.0,
+        "3": 5.5,
+        "4": 0.2
+      },
+      "hit_rate_1plus": 74.2,
+      "hit_rate_2plus": 30.7
+    },
+    "combined_top": {
+      "tests": 1123,
+      "avg_hits": 1.077,
+      "hit_distribution": {
+        "0": 26.4,
+        "1": 44.9,
+        "2": 24.2,
+        "3": 3.8,
+        "4": 0.7
+      },
+      "hit_rate_1plus": 73.6,
+      "hit_rate_2plus": 28.8
+    },
+    "edge": {
+      "tests": 1123,
+      "avg_hits": 2.14,
+      "hit_distribution": {
+        "0": 4.9,
+        "1": 24.0,
+        "2": 35.1,
+        "3": 25.9,
+        "4": 8.4,
+        "5": 1.6,
+        "6": 0.1
+      },
+      "hit_rate_1plus": 95.1,
+      "hit_rate_2plus": 71.1
+    },
+    "mod3_cold": {
+      "tests": 1123,
+      "avg_hits": 1.984,
+      "hit_distribution": {
+        "0": 6.1,
+        "1": 27.8,
+        "2": 36.1,
+        "3": 22.9,
+        "4": 6.2,
+        "5": 1.0
+      },
+      "hit_rate_1plus": 93.9,
+      "hit_rate_2plus": 66.2
+    },
+    "prime": {
+      "tests": 1123,
+      "avg_hits": 1.971,
+      "hit_distribution": {
+        "0": 6.4,
+        "1": 28.0,
+        "2": 35.6,
+        "3": 23.1,
+        "4": 6.1,
+        "5": 0.9
+      },
+      "hit_rate_1plus": 93.6,
+      "hit_rate_2plus": 65.6
+    },
+    "recommended_weights": {
+      "edge": 25,
+      "mod3_cold": 22,
+      "prime": 22,
+      "omission_top": 4,
+      "freq_top": 3,
+      "combined_top": 3
+    },
+    "total_periods": 3467,
+    "tests_run": 1123,
+    "step": 3
+  },
+  "dlt": {
+    "freq_top": {
+      "tests": 929,
+      "avg_hits": 0.764,
+      "hit_distribution": {
+        "0": 40.5,
+        "1": 43.9,
+        "2": 14.3,
+        "3": 1.3
+      },
+      "hit_rate_1plus": 59.5,
+      "hit_rate_2plus": 15.6
+    },
+    "omission_top": {
+      "tests": 929,
+      "avg_hits": 0.699,
+      "hit_distribution": {
+        "0": 45.1,
+        "1": 40.9,
+        "2": 13.0,
+        "3": 1.0
+      },
+      "hit_rate_1plus": 54.9,
+      "hit_rate_2plus": 14.0
+    },
+    "combined_top": {
+      "tests": 929,
+      "avg_hits": 0.733,
+      "hit_distribution": {
+        "0": 43.1,
+        "1": 42.4,
+        "2": 12.8,
+        "3": 1.6,
+        "4": 0.1
+      },
+      "hit_rate_1plus": 56.9,
+      "hit_rate_2plus": 14.5
+    },
+    "edge": {
+      "tests": 929,
+      "avg_hits": 1.454,
+      "hit_distribution": {
+        "0": 15.1,
+        "1": 39.3,
+        "2": 32.5,
+        "3": 11.5,
+        "4": 1.5,
+        "5": 0.1
+      },
+      "hit_rate_1plus": 84.9,
+      "hit_rate_2plus": 45.6
+    },
+    "mod3_cold": {
+      "tests": 929,
+      "avg_hits": 1.385,
+      "hit_distribution": {
+        "0": 18.9,
+        "1": 38.2,
+        "2": 29.6,
+        "3": 11.8,
+        "4": 1.4
+      },
+      "hit_rate_1plus": 81.1,
+      "hit_rate_2plus": 42.8
+    },
+    "prime": {
+      "tests": 929,
+      "avg_hits": 1.456,
+      "hit_distribution": {
+        "0": 15.5,
+        "1": 38.0,
+        "2": 33.8,
+        "3": 10.9,
+        "4": 1.7,
+        "5": 0.1
+      },
+      "hit_rate_1plus": 84.5,
+      "hit_rate_2plus": 46.5
+    },
+    "recommended_weights": {
+      "edge": 25,
+      "prime": 25,
+      "mod3_cold": 23,
+      "freq_top": 5,
+      "combined_top": 4,
+      "omission_top": 3
+    },
+    "total_periods": 2887,
+    "tests_run": 929,
+    "step": 3
+  },
+  "ssq_discoveries": [
+    "遗漏策略(均命中1.108)优于频率策略(均命中1.093)，冷号回补有效",
+    "边码策略有效：平均命中2.14个，命中率≥1=95.1%",
+    "综合评分最优：平均命中1.077个/期"
+  ],
+  "dlt_discoveries": [
+    "频率策略(均命中0.764)略优于遗漏策略(均命中0.699)，热号追踪有效",
+    "边码策略有效：平均命中1.454个，命中率≥1=84.9%",
+    "综合评分最优：平均命中0.733个/期"
+  ],
+  "timestamp": "2026-06-25 22:42:05",
+  "elapsed_seconds": 13.2
+}
