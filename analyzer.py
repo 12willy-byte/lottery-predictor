@@ -154,6 +154,15 @@ class LotteryAnalyzer:
             'pair_rate': {p: round(c/total, 4) for p, c in pair_counter.most_common(20)}
         }
 
+    def _compute_recent_hits(self, draws, n=5):
+        """计算近N期每个号码的出现次数"""
+        from collections import Counter
+        cnt = Counter()
+        for draw in draws[-n:]:
+            for num in draw:
+                cnt[num] += 1
+        return dict(cnt)
+
     def get_primes(self, limit):
         """获取质数列表"""
         primes = []
@@ -453,6 +462,7 @@ class SSQAnalyzer(LotteryAnalyzer):
         "_last_blue": blues[-1][0] if blues else None,
             "blue_follow_stats": self._compute_follow_stats(blues, 16),
             "blue_streak": self._compute_blue_streak(blues),
+            "_recent_hits": self._compute_recent_hits(reds, 5),
         "_last_draw": reds[-1] if reds else []
         }
 
@@ -995,6 +1005,12 @@ class MultiStrategyPredictor:
                     s += w['rna'] / pick_cnt
                 else:
                     s += w['rna'] / pick_cnt * 0.3
+                # v3.8: 近期连出趋势 - 近5期出现次数越多越加分
+                recent_cnt = analysis.get('_recent_hits', {}).get(n, 0)
+                if recent_cnt >= 3:
+                    s += w['cold_hot'] / pick_cnt * 0.8
+                elif recent_cnt >= 2:
+                    s += w['cold_hot'] / pick_cnt * 0.4
             if n in prime_set:
                 s += b['prime'] / pick_cnt * 0.8
             scores[n] = round(s, 1)
@@ -1281,9 +1297,10 @@ class MultiStrategyPredictor:
                 bv += 3
             blue_scores[n] = bv * (1 + random.uniform(-0.04, 0.04))
 
-        top_blues = sorted(blue_scores.keys(), key=lambda n: -blue_scores[n])[:6]
+        top_blues = sorted(blue_scores.keys(), key=lambda n: -blue_scores[n])[:8]
         bw_b = [max(0.1, blue_scores[n] - blue_scores[top_blues[-1]] + 1) for n in top_blues]
         best_blue = random.choices(top_blues, weights=bw_b, k=1)[0]
+        used_blues = {best_blue}  # v3.8: 确保每组蓝球不同
         
         hc = analysis.get('red_hot_cold', {})
         om_d = analysis.get('red_omission', {})
@@ -1314,7 +1331,7 @@ class MultiStrategyPredictor:
                     all_detail['omission_base'] = round(sum(
                         min(2.5, om_d.get(n, 0) * 0.15 + 0.5) for n in reds
                     ), 1)
-                    diverse_blue = random.choices(top_blues, weights=bw_b, k=1)[0]
+                    diverse_blue = random.choices([b for b in top_blues if b not in used_blues] or top_blues, weights=[bw_b[i] for i,b in enumerate(top_blues) if b not in used_blues] or bw_b, k=1)[0]; used_blues.add(diverse_blue)
                     results.append({
                         'reds': list(reds),
                         'blue': diverse_blue,
@@ -1331,7 +1348,7 @@ class MultiStrategyPredictor:
                     seen.add(key)
                     det = dict(det)
                     det['explore'] = 1
-                    diverse_blue = random.choices(top_blues, weights=bw_b, k=1)[0]
+                    diverse_blue = random.choices([b for b in top_blues if b not in used_blues] or top_blues, weights=[bw_b[i] for i,b in enumerate(top_blues) if b not in used_blues] or bw_b, k=1)[0]; used_blues.add(diverse_blue)
                     all_detail = dict(det)
                     all_detail['cold_hot_base'] = round(sum(
                         self.weights['cold_hot'] / 6.0 * (1.2 if n in hh else 1.0 if n in ww else 0.3) for n in reds
