@@ -939,6 +939,19 @@ class MultiStrategyPredictor:
         self.bonus = dict(self.BONUS_WEIGHTS)
         self.scores_detail = {}
 
+    def _sync_weights_from_cache(self, lottery_type):
+        """从缓存加载权重，与GUI保持一致"""
+        try:
+            import json, os
+            cache_path = os.path.join("data", "weights_cache.json")
+            if os.path.exists(cache_path):
+                with open(cache_path, "r", encoding="utf-8") as f:
+                    c = json.load(f)
+                if lottery_type in c:
+                    self.weights.update(c[lottery_type])
+        except:
+            pass
+
     def score_numbers(self, analysis, num_range, pick_cnt):
         """个号评分 - 冷热号 + 遗漏值 + 尾数 + 重邻孤 + 质数加分"""
         scores = {}
@@ -1192,6 +1205,7 @@ class MultiStrategyPredictor:
     def select_best_ssq(self, analysis, count=5, period_seed=None):
         """多策略投票双色球 - 全量候选池 + 多样性注入"""
         from itertools import combinations
+        self._sync_weights_from_cache("ssq")
         
         # 基于期号设置随机种子，保证可复现但不同期不同结果
         if period_seed is not None:
@@ -1372,6 +1386,7 @@ class MultiStrategyPredictor:
     def select_best_dlt(self, analysis, count=5, period_seed=None):
         """多策略投票大乐透 - 全量候选池 + 多样性注入"""
         from itertools import combinations
+        self._sync_weights_from_cache("dlt")
         
         if period_seed is not None:
             random.seed(int(period_seed) + 2024000)
