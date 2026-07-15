@@ -1193,6 +1193,19 @@ class MultiStrategyPredictor:
         detail['road_012'] = round(road_score, 1)
         total += road_score
 
+        # 区间均衡 — v3.9: 低中高区覆盖奖励
+        low_cnt = sum(1 for n in combo if n <= 11)
+        high_cnt = sum(1 for n in combo if n >= 23) if num_range == 33 else sum(1 for n in combo if n >= 24)
+        mid_cnt = n_len - low_cnt - high_cnt
+        if low_cnt >= 1 and mid_cnt >= 1 and high_cnt >= 1:
+            zone_score = w.get('odd_even', 10) * 0.6  # 三区均衡奖励
+        elif max(low_cnt, mid_cnt, high_cnt) <= n_len - 1:
+            zone_score = w.get('odd_even', 10) * 0.2  # 至少两区有号
+        else:
+            zone_score = -w.get('odd_even', 10) * 0.3  # 集中一区惩罚
+        detail['zone_balance'] = round(zone_score, 1)
+        total += zone_score
+        
         # 连号惩罚
         sr2 = sorted(combo)
         cons = sum(1 for i in range(len(sr2) - 1) if sr2[i + 1] == sr2[i] + 1)
@@ -1258,8 +1271,8 @@ class MultiStrategyPredictor:
                 if len(candidates) >= 20:
                     break
         
-        # 控制候选池上限(22个)，C(22,6)=74613组合，快速响应
-        candidates = candidates[:22]
+        # v3.9: 候选池扩到28个，确保覆盖全区间 + 加速采样
+        candidates = candidates[:28]
         
         # 分数加微小随机扰动(±3%)打破完全确定性
         perturbed_scores = {}
@@ -1413,7 +1426,7 @@ class MultiStrategyPredictor:
                     candidates.append(n)
                 if len(candidates) >= 22:
                     break
-        candidates = candidates[:22]
+        candidates = candidates[:26]
         perturbed_scores = {}
         for n in range(1, 36):
             perturbed_scores[n] = scores.get(n, 0) * (1 + random.uniform(-0.08, 0.08))
