@@ -140,18 +140,30 @@ class LotteryAnalyzer:
         return streaks
 
     def _compute_back_pair_freq(self, backs):
-        """分析后区两号组合频率 - 用于DLT后区选号"""
+        """分析后区两号组合频率 + 近期权重 - v4.0"""
         from collections import Counter
         pair_counter = Counter()
-        for draw in backs:
+        pair_recent = Counter()  # 近50期加权
+        total = len(backs)
+        for i, draw in enumerate(backs):
             if len(draw) >= 2:
                 pair = tuple(sorted(draw[:2]))
                 pair_counter[pair] += 1
-        total = len(backs)
+                # 近期权重: 越近越高
+                recency = min(1.0, (i - max(0, total - 50)) / 50) if i >= total - 50 else 0
+                if recency > 0:
+                    pair_recent[pair] += 1 + recency
+        # 合并: 全量0.4 + 近期0.6
+        merged = {}
+        all_pairs = set(list(pair_counter.keys()) + list(pair_recent.keys()))
+        for p in all_pairs:
+            merged[p] = pair_counter.get(p, 0) * 0.4 + pair_recent.get(p, 0) * 0.6
+        top = sorted(merged.items(), key=lambda x: -x[1])[:20]
         return {
-            'top_pairs': pair_counter.most_common(20),
+            'top_pairs': [(p, round(c, 1)) for p, c in top],
             'total_draws': total,
-            'pair_rate': {p: round(c/total, 4) for p, c in pair_counter.most_common(20)}
+            'pair_rate': {p: round(c/total, 4) for p, c in top},
+            'recent_weighted': True
         }
 
     def _compute_recent_hits(self, draws, n=5):
@@ -1112,24 +1124,32 @@ class MultiStrategyPredictor:
         detail['sum_range'] = round(ss, 1)
         total += ss
         
-        # 位置频次 — v3.4 定位频率评分(强信号)
+        # 位置约束 — v4.0 硬约束+软加分(位1/位N强约束, 中位软加分)
         pos_freq = analysis.get('_pos_freq', [])
         pscore = 0.0
+        sr_combo = sorted(combo)
         if pos_freq and len(pos_freq) == n_len:
-            sr_combo = sorted(combo)  # 排序后对应位置
             for j, n in enumerate(sr_combo):
                 if j < len(pos_freq):
                     pf = pos_freq[j]
-                    freq = pf.get(n, 0)
-                    max_f = max(pf.values()) if pf else 1
-                    # 位置频率归一化: 该位置最常见号码得满分
-                    pscore += b['position'] / n_len * (freq / max(max_f, 1))
+                    top8 = set(sorted(pf.keys(), key=lambda k: -pf[k])[:8])
+                    if j == 0 or j == n_len - 1:
+                        # 首位末位: 硬约束, 不在Top8重罚
+                        if n in top8:
+                            pscore += b['position'] * 0.5
+                        else:
+                            pscore -= b['position'] * 0.8  # 强惩罚
+                    else:
+                        # 中间位: 在Top8加分, 不在不罚
+                        if n in top8:
+                            freq = pf.get(n, 0)
+                            max_f = max(pf.values()) if pf else 1
+                            pscore += b['position'] / n_len * (freq / max(max_f, 1)) * 0.6
         elif analysis.get('pos_stats'):
-            # 降级: 用旧p10/p90范围
             ps = analysis.get('pos_stats', [])
             if ps and len(ps) == n_len:
                 pen = 0
-                for j, n in enumerate(sorted(combo)):
+                for j, n in enumerate(sr_combo):
                     if j < len(ps):
                         pj = ps[j]
                         if n < pj.get('p10', 1) or n > pj.get('p90', num_range):
@@ -1323,24 +1343,33 @@ class MultiStrategyPredictor:
         best.sort(key=lambda x: -x[0])
         explore_best.sort(key=lambda x: -x[0])
         
-        # 蓝球评分（加扰动）— v3.7 频率0.5:遗漏0.2:跟随0.15+热号+连出规律0.15
+        # 蓝球评分 — v4.0 频率0.4:遗漏0.25:跟随0.15:周期0.2+热号
         blue_scores = {}
         blue_freq = analysis.get('blue_frequency', {})
         blue_om = analysis.get('blue_omission', {})
         blue_follow = analysis.get('blue_follow_stats', {})
         blue_streak = analysis.get('blue_streak', {})
         last_blue = analysis.get('_last_blue', None)
+        total_draws = analysis.get('total', 100)
         for n in range(1, 17):
-            bv = blue_freq.get(n, 0) * 0.5
-            bv += blue_om.get(n, 0) * 0.2
-            # 连出规律: 最近3期出现过的号加分
+            bv = blue_freq.get(n, 0) * 0.4
+            bv += blue_om.get(n, 0) * 0.25
             bs = blue_streak.get(n, {})
-            bv += bs.get('recent_3', 0) * 0.15
-            # 冷号回补: 遗漏超过均值2倍的号加分
+            # 周期分析: 当前遗漏 vs 平均周期
             avg_gap = bs.get('avg_gap', 99)
             last_gap = bs.get('last_gap', 0)
-            if last_gap > avg_gap * 2 and avg_gap < 50:
-                bv += 1.5
+            total = bs.get('total_appear', 0)
+            if avg_gap < 50 and total > 0:
+                expected_cycle = total_draws / max(total, 1)
+                cycle_ratio = last_gap / max(expected_cycle, 1)
+                if cycle_ratio > 2.0:
+                    bv += 2.5  # 严重超期, 回补概率上升
+                elif cycle_ratio > 1.5:
+                    bv += 1.2
+                elif cycle_ratio < 0.3:
+                    bv += 0.8  # 刚出过, 可能连出
+            # 连出规律
+            bv += bs.get('recent_3', 0) * 0.15
             if last_blue and last_blue in blue_follow:
                 for fn, fcnt in blue_follow[last_blue]:
                     if fn == n:
