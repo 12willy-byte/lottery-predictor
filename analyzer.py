@@ -1349,42 +1349,18 @@ class MultiStrategyPredictor:
         last = analysis.get('_last_draw', [])
         prime_set = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31}
         
+        # v5.0: 简化 — +/-2池 + 个号评分, 去掉所有结构约束(已证明无效)
+        # 从+/-2池中按个号分数选Top组合
+        pool_scores = [(n, perturbed_scores.get(n, 0)) for n in candidates]
+        pool_scores.sort(key=lambda x: -x[1])
+        # 取前18个做C(18,6)枚举, 只用个号总分排序
+        top18 = [n for n,_ in pool_scores[:18]]
         best = []
-        top5_freq_nums = set(top_by_score[:5])
-        explore_best = []  # 探索池(不含Top5频号)
-        # v3.10: 全量候选池用约束预过滤加速
-        all_combos = list(combinations(candidates, 6))
-        if len(all_combos) > 200000:
-            # 预过滤: 只保留012路不缺失+区域至少两区有号的组合
-            filtered = []
-            for combo in all_combos:
-                roads = [n%3 for n in combo]
-                if 0 in roads and 1 in roads and 2 in roads:  # 012路不缺失
-                    filtered.append(combo)
-            if len(filtered) > 100000:
-                # 再按区域过滤
-                filtered2 = []
-                for combo in filtered:
-                    lo = sum(1 for n in combo if n <= 11)
-                    hi = sum(1 for n in combo if n >= 23)
-                    if lo >= 1 and hi >= 1:  # 至少两区
-                        filtered2.append(combo)
-                filtered = filtered2
-            combos_to_score = filtered if filtered else all_combos[:200000]
-        else:
-            combos_to_score = all_combos
-        for combo in combos_to_score:
-            num_score = sum(perturbed_scores[n] for n in combo)
-            combo_score, detail = self.rate_combo(combo, analysis, 33, last, prime_set)
-            total = round(num_score + combo_score, 1)
-            entry = (total, sorted(combo), num_score, combo_score, detail)
-            best.append(entry)
-            if not (set(combo) & top5_freq_nums):
-                total += 5
-                detail['explore'] = 2
-                explore_best.append((total, sorted(combo), num_score, combo_score, dict(detail)))
+        for combo in combinations(top18, 6):
+            total = sum(perturbed_scores.get(n, 0) for n in combo)
+            best.append((round(total, 1), sorted(combo), total, 0, {}))
         best.sort(key=lambda x: -x[0])
-        explore_best.sort(key=lambda x: -x[0])
+        explore_best = []  # v5.0: 探索池不再需要, 简化为空
         
         # 蓝球评分 — v4.0 频率0.4:遗漏0.25:跟随0.15:周期0.2+热号
         blue_scores = {}
@@ -1433,8 +1409,6 @@ class MultiStrategyPredictor:
         
         results = []
         seen = set()
-        explore_count = min(1, count // 2 + 1) if explore_best else 0
-        main_count = count - explore_count
         top_pool = best[:25]
         if top_pool:
             min_score = top_pool[-1][0]
@@ -1541,38 +1515,16 @@ class MultiStrategyPredictor:
         last = analysis.get('_last_draw', [])
         prime_set = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31}
         
+        # v5.0: 简化 — +/-2池 + 个号评分, 去掉所有结构约束
+        pool_scores = [(n, perturbed_scores.get(n, 0)) for n in candidates]
+        pool_scores.sort(key=lambda x: -x[1])
+        top15 = [n for n,_ in pool_scores[:15]]
         best = []
-        top5_freq_nums = set(top_by_score[:5])
-        explore_best = []  # 探索池(不含Top5频号)
-        # v3.10: 全量候选池用约束预过滤加速
-        all_combos = list(combinations(candidates, 5))
-        if len(all_combos) > 200000:
-            filtered = []
-            for combo in all_combos:
-                roads = [n%3 for n in combo]
-                if 0 in roads and 1 in roads and 2 in roads:
-                    filtered.append(combo)
-            if len(filtered) > 100000:
-                filtered2 = []
-                for combo in filtered:
-                    lo = sum(1 for n in combo if n <= 11)
-                    hi = sum(1 for n in combo if n >= 24)
-                    if lo >= 1 and hi >= 1:
-                        filtered2.append(combo)
-                filtered = filtered2
-            combos_to_score = filtered if filtered else all_combos[:200000]
-        else:
-            combos_to_score = all_combos
-        for combo in combos_to_score:
-            num_score = sum(perturbed_scores[n] for n in combo)
-            combo_score, detail = self.rate_combo(combo, analysis, 35, last, prime_set)
-            total = round(num_score + combo_score, 1)
-            entry = (total, sorted(combo), num_score, combo_score, detail)
-            best.append(entry)
-            if not (set(combo) & top5_freq_nums):
-                explore_best.append(entry)
+        for combo in combinations(top15, 5):
+            total = sum(perturbed_scores.get(n, 0) for n in combo)
+            best.append((round(total, 1), sorted(combo), total, 0, {}))
         best.sort(key=lambda x: -x[0])
-        explore_best.sort(key=lambda x: -x[0])
+        explore_best = []
         
         # 后区评分（加扰动 + 多样性）— v3.7 频率0.6:遗漏0.2:跟随0.2+重号+热门组合
         back_scores = {}
