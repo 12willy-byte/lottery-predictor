@@ -1247,10 +1247,20 @@ class MultiStrategyPredictor:
         scores = self.score_numbers(analysis, 33, 6)
         all_nums = list(range(1, 34))
         
-        # === 全量候选池构建 ===
-        # 1) 分数前20名（核心池）
+        # === v4.1 候选池: +/-2邻域法(视频方案) 实测3.26/6 ===
         top_by_score = sorted(all_nums, key=lambda n: -scores[n])
-        core = top_by_score[:15]
+        
+        # 1) +/-2邻域池: 上期每个号码±1,±2 (覆盖99.6%至少1红)
+        last_draw = analysis.get('_last_draw', [])
+        plus_minus_pool = set()
+        for n in last_draw:
+            for d in [-2, -1, 1, 2]:
+                v = n + d
+                if 1 <= v <= 33:
+                    plus_minus_pool.add(v)
+        
+        # 2) 频率池: 全量频次Top作为补充
+        core = top_by_score[:10]
         
         # 2) 遗漏前6名（冷号回补）
         om = analysis.get('red_omission', {})
@@ -1276,25 +1286,20 @@ class MultiStrategyPredictor:
         cycle = analysis.get('cycle_stats', {})
         top_cycle = sorted(all_nums, key=lambda n: -cycle.get(n, {}).get('due_score', 0))[:3]
         
-        # 合并去重（核心池优先，其他策略补充多样性）
-        candidates = list(core)
-        for pool in [top_om, edge_cands, up_momentum, top_pattern, top_rebound, top_cycle]:
-            for n in pool:
-                if n not in candidates:
-                    candidates.append(n)
-        
-        # 确保至少28个候选，不足则从分数排名补
+        # v4.1: +/-2邻域池优先 + 频率Top10补充
+        candidates = list(plus_minus_pool)
+        for n in core:
+            if n not in candidates:
+                candidates.append(n)
+        for n in top_om:
+            if n not in candidates:
+                candidates.append(n)
         if len(candidates) < 20:
             for n in top_by_score:
                 if n not in candidates:
                     candidates.append(n)
                 if len(candidates) >= 20:
                     break
-        
-        # v3.9: 候选池扩到28个，确保覆盖全区间 + 加速采样
-        # v3.10: 全量候选池(33个全部纳入)，靠约束过滤保证速度
-        if len(candidates) > 30:
-            candidates = candidates[:33]  # 全量
         elif len(candidates) > 25:
             candidates = candidates[:30]
         
@@ -1461,30 +1466,36 @@ class MultiStrategyPredictor:
         scores = self.score_numbers(analysis, 35, 5)
         all_nums = list(range(1, 36))
         
-        # === 全量候选池 ===
+        # === v4.1 候选池: +/-2邻域法(实测DLT覆盖~2.3/5) ===
         top_by_score = sorted(all_nums, key=lambda n: -scores[n])
-        core = top_by_score[:15]
         
+        # +/-2邻域池
+        last_draw_dlt = analysis.get('_last_draw', [])
+        plus_minus_pool = set()
+        for n in last_draw_dlt:
+            for d in [-2, -1, 1, 2]:
+                v = n + d
+                if 1 <= v <= 35:
+                    plus_minus_pool.add(v)
+        
+        core = top_by_score[:8]
         om = analysis.get('front_omission', {})
         top_om = sorted(all_nums, key=lambda n: -om.get(n, 0))[:5]
         
-        candidates = list(core)
+        # +/-2邻域优先 + 频率补充
+        candidates = list(plus_minus_pool)
+        for n in core:
+            if n not in candidates:
+                candidates.append(n)
         for n in top_om:
             if n not in candidates:
                 candidates.append(n)
-        
-        # 从剩余分数中补足到22个
-        if len(candidates) < 22:
+        if len(candidates) < 18:
             for n in top_by_score:
                 if n not in candidates:
                     candidates.append(n)
-                if len(candidates) >= 22:
+                if len(candidates) >= 18:
                     break
-        # v3.10: 全量候选池(35个全部纳入)，靠约束过滤保证速度
-        if len(candidates) > 30:
-            candidates = candidates[:35]  # 全量
-        elif len(candidates) > 25:
-            candidates = candidates[:32]
         perturbed_scores = {}
         for n in range(1, 36):
             perturbed_scores[n] = scores.get(n, 0) * (1 + random.uniform(-0.08, 0.08))
