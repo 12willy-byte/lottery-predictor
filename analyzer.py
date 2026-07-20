@@ -1091,10 +1091,17 @@ class MultiStrategyPredictor:
         detail['follow'] = round(foll, 1)
         total += foll
         
-        # 尾数多样性
+        # 尾数多样性 — v4.2 增强: 4-5个不同尾数最佳
         tails = [nn % 10 for nn in combo]
-        td = sum(max(0, c - 1) * 1.5 for c in _C(tails).values())
-        td_score = max(0.0, w['tail'] * 0.4 - td)
+        unique_tails = len(set(tails))
+        if unique_tails >= 5:
+            td_score = w['tail'] * 0.8
+        elif unique_tails == 4:
+            td_score = w['tail'] * 0.5
+        elif unique_tails == 3:
+            td_score = w['tail'] * 0.2
+        else:
+            td_score = -w['tail'] * 0.3
         detail['tail_diversity'] = round(td_score, 1)
         total += td_score
         
@@ -1116,6 +1123,18 @@ class MultiStrategyPredictor:
         acs = b['ac_value'] if tmin <= ac <= tmax else (b['ac_value'] * 0.5 if tmin - 2 <= ac <= tmax + 2 else 0)
         detail['ac_value'] = round(acs, 1)
         total += acs
+        
+        # 相邻间距分布 — v4.2 视频差值概率: 无极端密集/稀疏
+        gaps = [sr[i+1] - sr[i] for i in range(len(sr)-1)]
+        gap_min, gap_max = min(gaps), max(gaps)
+        avg_gap = (sr[-1] - sr[0]) / (len(sr) - 1)
+        gap_score = 0.0
+        if gap_min >= 1 and gap_max <= 15 and 2 <= avg_gap <= 8:
+            gap_score = b.get('ac_value', 6) * 0.3  # 间距健康
+        if gap_min == 1 and gap_max > 18:
+            gap_score -= b.get('ac_value', 6) * 0.3  # 极端间距
+        detail['gap_dist'] = round(gap_score, 1)
+        total += gap_score
         
         # 和值范围
         s = sum(combo)
@@ -1225,6 +1244,25 @@ class MultiStrategyPredictor:
             zone_score = -w.get('odd_even', 10) * 0.3  # 集中一区惩罚
         detail['zone_balance'] = round(zone_score, 1)
         total += zone_score
+        
+        # 冷热均衡 - v4.1 3-4热+2-3冷
+        hc = analysis.get('red_hot_cold' if num_range == 33 else 'front_hot_cold', {})
+        hot_set = set(hc.get('hot', []))
+        warm_set = set(hc.get('warm', []))
+        cold_set = set(hc.get('cold', []))
+        hot_cnt = sum(1 for n in combo if n in hot_set)
+        warm_cnt = sum(1 for n in combo if n in warm_set)
+        cold_cnt = sum(1 for n in combo if n in cold_set)
+        if hot_cnt >= 2 and cold_cnt >= 2:
+            ch_score = w.get('cold_hot', 10) * 0.4  # 均衡奖
+        elif cold_cnt == 0:
+            ch_score = -w.get('cold_hot', 10) * 0.3  # 全无冷号
+        elif hot_cnt == 0:
+            ch_score = -w.get('cold_hot', 10) * 0.2  # 全无热号
+        else:
+            ch_score = 0
+        detail['coldhot_balance'] = round(ch_score, 1)
+        total += ch_score
         
         # 连号惩罚
         sr2 = sorted(combo)
