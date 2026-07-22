@@ -1,0 +1,134 @@
+{
+  "timestamp": "2026-07-23T04:42:21.964358",
+  "analysis": "deep_dive_3",
+  "individual_predictability": {
+    "26": {
+      "base_rate": 0.1924,
+      "top10pct_acc": 0.2433,
+      "improvement": 0.051
+    },
+    "13": {
+      "base_rate": 0.1814,
+      "top10pct_acc": 0.2107,
+      "improvement": 0.0293
+    },
+    "3": {
+      "base_rate": 0.1841,
+      "top10pct_acc": 0.2077,
+      "improvement": 0.0236
+    },
+    "30": {
+      "base_rate": 0.1796,
+      "top10pct_acc": 0.1958,
+      "improvement": 0.0162
+    },
+    "9": {
+      "base_rate": 0.187,
+      "top10pct_acc": 0.2018,
+      "improvement": 0.0147
+    },
+    "24": {
+      "base_rate": 0.1746,
+      "top10pct_acc": 0.1869,
+      "improvement": 0.0123
+    },
+    "23": {
+      "base_rate": 0.1716,
+      "top10pct_acc": 0.181,
+      "improvement": 0.0094
+    },
+    "1": {
+      "base_rate": 0.1935,
+      "top10pct_acc": 0.2018,
+      "improvement": 0.0082
+    },
+    "18": {
+      "base_rate": 0.1909,
+      "top10pct_acc": 0.1988,
+      "improvement": 0.0079
+    },
+    "33": {
+      "base_rate": 0.1648,
+      "top10pct_acc": 0.1721,
+      "improvement": 0.0073
+    },
+    "4": {
+      "base_rate": 0.1773,
+      "top10pct_acc": 0.181,
+      "improvement": 0.0037
+    },
+    "11": {
+      "base_rate": 0.1743,
+      "top10pct_acc": 0.178,
+      "improvement": 0.0037
+    },
+    "8": {
+      "base_rate": 0.1864,
+      "top10pct_acc": 0.1899,
+      "improvement": 0.0035
+    },
+    "21": {
+      "base_rate": 0.1699,
+      "top10pct_acc": 0.1721,
+      "improvement": 0.0022
+    },
+    "19": {
+      "base_rate": 0.1838,
+      "top10pct_acc": 0.184,
+      "improvement": 0.0002
+    }
+  },
+  "blue_strategies": {
+    "random": 0.0601,
+    "freq_all": 0.0592,
+    "freq_50": 0.0692,
+    "freq_20": 0.0633,
+    "markov": 0.0618,
+    "omission": 0.0574
+  },
+  "coverage_demo": {
+    "bets": [
+      [
+        10,
+        11,
+        23,
+        27,
+        31,
+        32
+      ],
+      [
+        7,
+        11,
+        12,
+        20,
+        22,
+        29
+      ],
+      [
+        2,
+        8,
+        14,
+        20,
+        24,
+        29
+      ],
+      [
+        3,
+        5,
+        12,
+        13,
+        17,
+        25
+      ],
+      [
+        4,
+        6,
+        10,
+        12,
+        16,
+        28
+      ]
+    ],
+    "coverage": 24
+  }
+}
