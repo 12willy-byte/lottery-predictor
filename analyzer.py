@@ -1276,6 +1276,7 @@ class MultiStrategyPredictor:
     def select_best_ssq(self, analysis, count=5, period_seed=None):
         """多策略投票双色球 - 全量候选池 + 多样性注入"""
         from itertools import combinations
+        from database import get_all_ssq
         self._sync_weights_from_cache("ssq")
         
         # 基于期号设置随机种子，保证可复现但不同期不同结果
@@ -1341,10 +1342,21 @@ class MultiStrategyPredictor:
         elif len(candidates) > 25:
             candidates = candidates[:30]
         
-        # 分数加微小随机扰动(±3%)打破完全确定性
+        # v5.1: 贝叶斯偏差加权 — 物理偏差×1.5 冷号×0.7
+        try:
+            bd = BiasDetector(ssq_data, 33, 6)
+            bias = bd.consensus_bias([100, 300, 1000])
+        except:
+            bias = {}
+        # 分数加微小随机扰动 + 偏差加权
         perturbed_scores = {}
         for n in range(1, 34):
-            perturbed_scores[n] = scores.get(n, 0) * (1 + random.uniform(-0.08, 0.08))
+            base = scores.get(n, 0)
+            bw = 1.0
+            if n in bias:
+                bw = 1.0 + bias[n] * 0.15  # z=+2 → 1.3x, z=-2 → 0.7x
+                bw = max(0.6, min(1.4, bw))
+            perturbed_scores[n] = base * bw * (1 + random.uniform(-0.06, 0.06))
         
         last = analysis.get('_last_draw', [])
         prime_set = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31}
@@ -1470,6 +1482,7 @@ class MultiStrategyPredictor:
     def select_best_dlt(self, analysis, count=5, period_seed=None):
         """多策略投票大乐透 - 全量候选池 + 多样性注入"""
         from itertools import combinations
+        from database import get_all_dlt
         self._sync_weights_from_cache("dlt")
         
         if period_seed is not None:
@@ -1508,9 +1521,20 @@ class MultiStrategyPredictor:
                     candidates.append(n)
                 if len(candidates) >= 18:
                     break
+        # v5.1: 贝叶斯偏差加权
+        try:
+            bd = BiasDetector(dlt_data, 35, 5)
+            bias = bd.consensus_bias([100, 300, 1000])
+        except:
+            bias = {}
         perturbed_scores = {}
         for n in range(1, 36):
-            perturbed_scores[n] = scores.get(n, 0) * (1 + random.uniform(-0.08, 0.08))
+            base = scores.get(n, 0)
+            bw = 1.0
+            if n in bias:
+                bw = 1.0 + bias[n] * 0.15
+                bw = max(0.6, min(1.4, bw))
+            perturbed_scores[n] = base * bw * (1 + random.uniform(-0.06, 0.06))
         
         last = analysis.get('_last_draw', [])
         prime_set = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31}
