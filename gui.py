@@ -257,6 +257,14 @@ class LotteryGUI:
                     det_text+="..."
                 det_lbl=tk.Label(row,text=det_text,font=("微软雅黑",6),fg="#7f8c8d",bg=self.colors["light_bg"])
                 det_lbl.pack(side=tk.LEFT,padx=2)
+    
+    def show_v54_badge(self, parent, row, col):
+        """Show V5.4 CRF prediction badge"""
+        import tkinter as tk
+        badge = tk.Label(parent, text="V5.4 CRF", font=("微软雅黑", 7, "bold"),
+                        bg="#ff6600", fg="white", padx=3, pady=1)
+        badge.grid(row=row, column=col, sticky="w", padx=(2,0))
+
     def display_dlt_result(self,preds):
         for w in self.dlt_sl.winfo_children(): w.destroy()
         if not preds:
@@ -482,6 +490,16 @@ class LotteryGUI:
                     self.ssq_preds.append({"period":next_period+"*","reds":cr,"blue":preds[0]["blue"],"score":cr_score,"corrected":True,"detail":{}})
                     self.ssq_rec_title+=" [偏差修正版]"
         self.display_ssq_result(self.ssq_preds)
+        # V5.4 CRF Engine integration
+        try:
+            from v54_engine import predict_ssq as predict_ssq_v54
+            v54_preds = predict_ssq_v54(3)
+            self.ssq_preds_v54 = []
+            for idx, p in enumerate(v54_preds):
+                label = next_period + "-V54" if idx == 0 else f"{next_period}-V54-{idx+1}"
+                self.ssq_preds_v54.append({"period": label, "reds": p["reds"], "blue": p["blue"], "score": p["score"]})
+        except Exception as e:
+            self.ssq_preds_v54 = []
         txt="SSQ第%s期" % next_period
         if self.ssq_correction: txt+=" [策略投票+偏差修正]"
         self.update_status(txt)
@@ -530,6 +548,16 @@ class LotteryGUI:
                     self.dlt_preds.append({"period":next_period+"*","fronts":cr,"backs":preds[0]["backs"],"score":cr_score,"corrected":True,"detail":{}})
                     self.dlt_rec_title+=" [偏差修正版]"
         self.display_dlt_result(self.dlt_preds)
+        # V5.4 CRF Engine integration
+        try:
+            from v54_engine import predict_dlt as predict_dlt_v54
+            v54_preds_d = predict_dlt_v54(3)
+            self.dlt_preds_v54 = []
+            for idx, p in enumerate(v54_preds_d):
+                label = next_period + "-V54" if idx == 0 else f"{next_period}-V54-{idx+1}"
+                self.dlt_preds_v54.append({"period": label, "reds": p["reds"], "blues": p["blues"], "score": p["score"]})
+        except Exception as e:
+            self.dlt_preds_v54 = []
         txt="DLT第%s期" % next_period
         if self.dlt_correction: txt+=" [策略投票+偏差修正]"
         self.update_status(txt)
