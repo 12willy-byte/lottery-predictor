@@ -1,0 +1,82 @@
+{
+  "timestamp": "2026-07-23T02:49:45.299958",
+  "data": "SSQ 3480 draws",
+  "methods": {
+    "bayesian": {
+      "sig_count": 3,
+      "top": [
+        [
+          14,
+          2.16
+        ],
+        [
+          28,
+          -2.36
+        ],
+        [
+          33,
+          -2.64
+        ]
+      ]
+    },
+    "network": {
+      "sig_edges": 69,
+      "top_edge": [
+        [
+          1,
+          22,
+          4.011019304624319
+        ]
+      ]
+    },
+    "monte_carlo_evo": {
+      "mean_hits": 1.027,
+      "vs_random": -0.137
+    },
+    "apriori": {
+      "pair_rules": 472,
+      "triplet_rules": 6,
+      "max_lift": 1.08
+    },
+    "markov": {
+      "sig_trans": 20,
+      "top": [
+        [
+          32,
+          33,
+          -3.6
+        ],
+        [
+          20,
+          32,
+          3.36
+        ],
+        [
+          9,
+          33,
+          -3.21
+        ],
+        [
+          15,
+          5,
+          -3.03
+        ],
+        [
+          29,
+          18,
+          3.0
+        ]
+      ]
+    },
+    "gradient_boosting": {
+      "train_acc": 0.8183,
+      "test_acc": 0.8181,
+      "baseline": 0.8182,
+      "improvement": -0.0001
+    },
+    "ensemble_voting": {
+      "mean_hits": 0.98,
+      "vs_random": 0.0
+    }
+  }
+}

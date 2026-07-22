@@ -1,0 +1,72 @@
+{
+  "timestamp": "2026-07-23T04:31:48.580601",
+  "version": "5.6b",
+  "approach": "Network Hub + Markov Direct Prediction",
+  "predictions": [
+    {
+      "rank": 1,
+      "reds": [
+        6,
+        8,
+        14,
+        17,
+        22,
+        26
+      ],
+      "blue": 4
+    },
+    {
+      "rank": 2,
+      "reds": [
+        6,
+        9,
+        14,
+        17,
+        22,
+        26
+      ],
+      "blue": 1
+    },
+    {
+      "rank": 3,
+      "reds": [
+        6,
+        8,
+        14,
+        17,
+        26,
+        27
+      ],
+      "blue": 7
+    },
+    {
+      "rank": 4,
+      "reds": [
+        7,
+        8,
+        14,
+        17,
+        22,
+        26
+      ],
+      "blue": 4
+    },
+    {
+      "rank": 5,
+      "reds": [
+        6,
+        9,
+        14,
+        17,
+        26,
+        27
+      ],
+      "blue": 1
+    }
+  ],
+  "mc_results": {
+    "v56b": 1.18,
+    "markov_only": 1.144,
+    "random": 1.044
+  }
+}
